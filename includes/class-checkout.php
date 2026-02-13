@@ -60,11 +60,8 @@ public function add_child_dropdown($fields) {
     $children = $this->get_children_for_user($user_id);
     error_log('WC Child Subscription Manager: User ID ' . $user_id . ' has ' . count($children) . ' children');
 
-    // Only show dropdown if user has children AND there are subscription products in cart
-    $has_subscription_products = $this->has_subscription_products();
-    error_log('WC Child Subscription Manager: Has subscription products in cart: ' . ($has_subscription_products ? 'Yes' : 'No'));
-    
-    if (!empty($children) && $has_subscription_products) {
+    // Show dropdown if user has children, regardless of product type
+    if (!empty($children)) {
         // Add the child dropdown to the billing section instead of order to make it more prominent
         $fields['billing']['child_id'] = array(
             'type'        => 'select',
@@ -83,13 +80,10 @@ public function add_child_dropdown($fields) {
         if (empty($children)) {
             error_log('WC Child Subscription Manager: No children found for user ' . $user_id);
         }
-        if (!$has_subscription_products) {
-            error_log('WC Child Subscription Manager: No subscription products found in cart for user ' . $user_id);
-        }
     }
 
         return $fields;
-    }
+}
 
     /**
      * Render child selection dropdown after order notes.
@@ -105,18 +99,16 @@ public function add_child_dropdown($fields) {
         $user_id = get_current_user_id();
         $children = $this->get_children_for_user($user_id);
 
-        // Only validate if there are subscription products in the cart and user has children
-        if ($this->has_subscription_products() && !empty($children) && empty($_POST['child_id'])) {
+        // Validate if user has children and no child is selected
+        if (!empty($children) && empty($_POST['child_id'])) {
             // Add error notice if no child is selected
-            wc_add_notice(__('Please select a child for your subscription.', 'wc-child-subscription-manager'), 'error');
+            wc_add_notice(__('Please select a child.', 'wc-child-subscription-manager'), 'error');
         }
         
         // Debug logging
-        if ($this->has_subscription_products()) {
+        if (!empty($_POST['child_id'])) {
             error_log('WC Child Subscription Manager: Validating child selection for user ' . $user_id);
-            if (!empty($_POST['child_id'])) {
-                error_log('WC Child Subscription Manager: Child ID ' . $_POST['child_id'] . ' selected');
-            }
+            error_log('WC Child Subscription Manager: Child ID ' . $_POST['child_id'] . ' selected');
         }
     }
 
@@ -126,12 +118,13 @@ public function add_child_dropdown($fields) {
      * @param object $order WooCommerce order object.
      */
     public function save_child_selection($order) {
-        if ($this->has_subscription_products()) {
-            $child_id = isset($_POST['child_id']) ? intval($_POST['child_id']) : 0;
-            if ($child_id) {
-                $order->update_meta_data('_child_id', $child_id);
-                $order->update_meta_data('_child_name', get_post($child_id)->post_title);
-            }
+        $child_id = isset($_POST['child_id']) ? intval($_POST['child_id']) : 0;
+        if ($child_id) {
+            $order->update_meta_data('_child_id', $child_id);
+            $order->update_meta_data('_child_name', get_post($child_id)->post_title);
+            
+            // Add debug logging
+            error_log('WC Child Subscription Manager: Saved child ID ' . $child_id . ' and name "' . get_post($child_id)->post_title . '" to order ' . $order->get_id());
         }
     }
 

@@ -44,4 +44,7 @@ jQuery(document).ready(function($) {
             $dropdown.trigger('change');
         }
     });
+    
+    // Add debug logging for dropdown visibility
+    console.log('Initial dropdown elements found:', $('.wc-child-subscription-dropdown').length);
 });
