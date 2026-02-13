@@ -68,8 +68,9 @@ class WC_Child_Subscription_Manager_Frontend {
             wp_enqueue_script('wc-child-subscription-checkout', WC_CHILD_SUBSCRIPTION_MANAGER_PLUGIN_URL . 'assets/js/checkout.js', array('jquery'), WC_CHILD_SUBSCRIPTION_MANAGER_VERSION, true);
             
             // Get children data for checkout page
-            $user_id = get_current_user_id();
-            $children = $this->get_children_for_user($user_id);
+            $user = wp_get_current_user();
+            $user_email = $user->user_email;
+            $children = $this->get_children_for_user_by_email($user_email);
             
             // Prepare children data for JavaScript
             $children_data = array();
@@ -171,6 +172,28 @@ class WC_Child_Subscription_Manager_Frontend {
                 array(
                     'key'     => '_parent_user_id',
                     'value'   => $user_id,
+                    'compare' => '=',
+                ),
+            ),
+        );
+
+        return get_posts($args);
+    }
+
+    /**
+     * Get children for a specific user by email.
+     *
+     * @param string $user_email User email.
+     * @return array Array of child posts.
+     */
+    public function get_children_for_user_by_email($user_email) {
+        $args = array(
+            'post_type'      => 'wc_child',
+            'posts_per_page' => -1,
+            'meta_query'     => array(
+                array(
+                    'key'     => '_parent_email',
+                    'value'   => $user_email,
                     'compare' => '=',
                 ),
             ),
@@ -302,6 +325,10 @@ class WC_Child_Subscription_Manager_Frontend {
         $age = absint($_POST['age']);
         $club = sanitize_text_field($_POST['club']);
 
+        // Get current user email
+        $user = wp_get_current_user();
+        $parent_email = $user->user_email;
+
         // Create post array
         $post_data = array(
             'post_title'    => $title,
@@ -316,6 +343,7 @@ class WC_Child_Subscription_Manager_Frontend {
         if ($post_id && !is_wp_error($post_id)) {
             // Save meta fields
             update_post_meta($post_id, '_parent_user_id', $user_id);
+            update_post_meta($post_id, '_parent_email', $parent_email);
             update_post_meta($post_id, '_dob', $dob);
             update_post_meta($post_id, '_gender', $gender);
             update_post_meta($post_id, '_age', $age);
@@ -353,12 +381,16 @@ class WC_Child_Subscription_Manager_Frontend {
             wp_die(__('You do not have permission to edit this child.', 'wc-child-subscription-manager'));
         }
 
+        // Get current user email
+        $user = wp_get_current_user();
+        $parent_email = $user->user_email;
+
         // Sanitize and validate data
         $title = sanitize_text_field($_POST['child_name']);
         $dob = sanitize_text_field($_POST['dob']);
         $gender = sanitize_text_field($_POST['gender']);
         $age = absint($_POST['age']);
-        $club = sanitize_text_field($_POST['club']);
+        $club = sanitize_text_field($_club');
 
         // Update post
         $post_data = array(
@@ -370,6 +402,8 @@ class WC_Child_Subscription_Manager_Frontend {
 
         if ($post_id && !is_wp_error($post_id)) {
             // Update meta fields
+            update_post_meta($child_id, '_parent_user_id', $user_id);
+            update_post_meta($child_id, '_parent_email', $parent_email);
             update_post_meta($child_id, '_dob', $dob);
             update_post_meta($child_id, '_gender', $gender);
             update_post_meta($child_id, '_age', $age);
