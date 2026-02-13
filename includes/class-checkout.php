@@ -54,12 +54,11 @@ class WC_Child_Subscription_Manager_Checkout {
 public function add_child_dropdown($fields) {
     error_log('WC Child Subscription Manager: add_child_dropdown method called');
     
-    $user = wp_get_current_user();
-    $user_email = $user->user_email;
-    error_log('WC Child Subscription Manager: Current user email: ' . $user_email);
+    $user_id = get_current_user_id();
+    error_log('WC Child Subscription Manager: Current user ID: ' . $user_id);
     
-    $children = $this->get_children_for_user($user_email);
-    error_log('WC Child Subscription Manager: User ' . $user_email . ' has ' . count($children) . ' children');
+    $children = $this->get_children_for_user($user_id);
+    error_log('WC Child Subscription Manager: User ID ' . $user_id . ' has ' . count($children) . ' children');
 
     // Show dropdown if user has children, regardless of product type
     if (!empty($children)) {
@@ -79,7 +78,7 @@ public function add_child_dropdown($fields) {
     } else {
         // Debug logging
         if (empty($children)) {
-            error_log('WC Child Subscription Manager: No children found for user ' . $user_email);
+            error_log('WC Child Subscription Manager: No children found for user ' . $user_id);
         }
     }
 
@@ -97,9 +96,8 @@ public function add_child_dropdown($fields) {
      * Validate child selection during checkout.
      */
     public function validate_child_selection() {
-        $user = wp_get_current_user();
-        $user_email = $user->user_email;
-        $children = $this->get_children_for_user($user_email);
+        $user_id = get_current_user_id();
+        $children = $this->get_children_for_user($user_id);
 
         // Validate if user has children and no child is selected
         if (!empty($children) && empty($_POST['child_id'])) {
@@ -109,7 +107,7 @@ public function add_child_dropdown($fields) {
         
         // Debug logging
         if (!empty($_POST['child_id'])) {
-            error_log('WC Child Subscription Manager: Validating child selection for user ' . $user_email);
+            error_log('WC Child Subscription Manager: Validating child selection for user ' . $user_id);
             error_log('WC Child Subscription Manager: Child ID ' . $_POST['child_id'] . ' selected');
         }
     }
@@ -170,19 +168,19 @@ public function add_child_dropdown($fields) {
     }
 
     /**
-     * Get children for a specific user by email.
+     * Get children for a specific user.
      *
-     * @param string $user_email User email.
+     * @param int $user_id User ID.
      * @return array Array of child posts.
      */
-    private function get_children_for_user($user_email) {
+    private function get_children_for_user($user_id) {
         $args = array(
             'post_type'      => 'wc_child',
             'posts_per_page' => -1,
             'meta_query'     => array(
                 array(
-                    'key'     => '_parent_email',
-                    'value'   => $user_email,
+                    'key'     => '_parent_user_id',
+                    'value'   => $user_id,
                     'compare' => '=',
                 ),
             ),
