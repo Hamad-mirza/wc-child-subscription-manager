@@ -3,7 +3,7 @@
  * Plugin Name:       WC Child Subscription Manager
  * Plugin URI:        https://github.com/Hamad-mirza/wc-child-subscription-manager
  * Description:       Allows parents to manage children and link subscriptions to them in WooCommerce.
- * Version:           1.0.1
+ * Version:           1.0.2
  * Author:            Hamad Mirza
  * Author URI:        https://mrhammad.com
  * Text Domain:       wc-child-subscription-manager
