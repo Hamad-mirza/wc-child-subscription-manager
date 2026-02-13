@@ -53,6 +53,7 @@ class WC_Child_Subscription_Manager_Subscription {
         $order = wc_get_order($order_data['order_id']);
 
         if (!$order) {
+            error_log('WC Child Subscription Manager: Could not get order object for subscription meta saving');
             return;
         }
 
@@ -62,6 +63,9 @@ class WC_Child_Subscription_Manager_Subscription {
         if ($child_id && $child_name) {
             update_post_meta($subscription_id, '_child_id', $child_id);
             update_post_meta($subscription_id, '_child_name', $child_name);
+            error_log('WC Child Subscription Manager: Saved child ID ' . $child_id . ' and name "' . $child_name . '" to subscription ' . $subscription_id);
+        } else {
+            error_log('WC Child Subscription Manager: No child ID or name found in order meta for subscription ' . $subscription_id);
         }
     }
 }

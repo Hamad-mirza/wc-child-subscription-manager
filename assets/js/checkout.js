@@ -35,4 +35,13 @@ jQuery(document).ready(function($) {
             $dropdown.trigger('change');
         }
     });
+    
+    // Additional handling for WooCommerce checkout updates
+    $(document).on('updated_checkout', function() {
+        console.log('Checkout updated via WooCommerce event');
+        var $dropdown = $('.wc-child-subscription-dropdown');
+        if ($dropdown.length > 0) {
+            $dropdown.trigger('change');
+        }
+    });
 });

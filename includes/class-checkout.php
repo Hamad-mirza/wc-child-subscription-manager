@@ -60,7 +60,8 @@ class WC_Child_Subscription_Manager_Checkout {
         $children = $this->get_children_for_user($user_id);
         error_log('WC Child Subscription Manager: User ID ' . $user_id . ' has ' . count($children) . ' children');
 
-        if (!empty($children)) {
+        // Only show dropdown if user has children AND there are subscription products in cart
+        if (!empty($children) && $this->has_subscription_products()) {
             // Add the child dropdown to the billing section instead of order to make it more prominent
             $fields['billing']['child_id'] = array(
                 'type'        => 'select',
@@ -74,19 +75,13 @@ class WC_Child_Subscription_Manager_Checkout {
             // Debug logging
             error_log('WC Child Subscription Manager: Added child dropdown to billing section');
         } else {
-            // Add notice to inform user to add children
-            add_action('woocommerce_checkout_after_customer_details', function() use ($user_id) {
-                $manage_children_url = get_permalink(get_page_by_title('Manage Children'));
-                echo '<div class="wc-child-subscription-notice" style="background:#fff3cd;padding:1px 12px;margin-bottom:20px;border-left:4px solid #ffc107;">';
-                echo '<p>' . sprintf(
-                    __('Debug: User %d has no children. You need to add children before you can checkout. <a href="%s">Add children now</a>.', 'wc-child-subscription-manager'),
-                    $user_id, esc_url($manage_children_url)
-                ) . '</p>';
-                echo '</div>';
-            });
-            
             // Debug logging
-            error_log('WC Child Subscription Manager: No children found for user ' . $user_id);
+            if (empty($children)) {
+                error_log('WC Child Subscription Manager: No children found for user ' . $user_id);
+            }
+            if (!$this->has_subscription_products()) {
+                error_log('WC Child Subscription Manager: No subscription products found in cart for user ' . $user_id);
+            }
         }
 
         return $fields;
@@ -106,13 +101,14 @@ class WC_Child_Subscription_Manager_Checkout {
         $user_id = get_current_user_id();
         $children = $this->get_children_for_user($user_id);
 
-        if (!empty($children) && empty($_POST['child_id'])) {
+        // Only validate if there are subscription products in the cart and user has children
+        if ($this->has_subscription_products() && !empty($children) && empty($_POST['child_id'])) {
             // Add error notice if no child is selected
             wc_add_notice(__('Please select a child for your subscription.', 'wc-child-subscription-manager'), 'error');
         }
         
         // Debug logging
-        if (!empty($children)) {
+        if ($this->has_subscription_products()) {
             error_log('WC Child Subscription Manager: Validating child selection for user ' . $user_id);
             if (!empty($_POST['child_id'])) {
                 error_log('WC Child Subscription Manager: Child ID ' . $_POST['child_id'] . ' selected');
@@ -126,10 +122,12 @@ class WC_Child_Subscription_Manager_Checkout {
      * @param object $order WooCommerce order object.
      */
     public function save_child_selection($order) {
-        $child_id = isset($_POST['child_id']) ? intval($_POST['child_id']) : 0;
-        if ($child_id) {
-            $order->update_meta_data('_child_id', $child_id);
-            $order->update_meta_data('_child_name', get_post($child_id)->post_title);
+        if ($this->has_subscription_products()) {
+            $child_id = isset($_POST['child_id']) ? intval($_POST['child_id']) : 0;
+            if ($child_id) {
+                $order->update_meta_data('_child_id', $child_id);
+                $order->update_meta_data('_child_name', get_post($child_id)->post_title);
+            }
         }
     }
 
