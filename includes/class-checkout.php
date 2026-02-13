@@ -51,38 +51,42 @@ class WC_Child_Subscription_Manager_Checkout {
      * @param array $fields Existing checkout fields.
      * @return array Modified fields.
      */
-    public function add_child_dropdown($fields) {
-        error_log('WC Child Subscription Manager: add_child_dropdown method called');
-        
-        $user_id = get_current_user_id();
-        error_log('WC Child Subscription Manager: Current user ID: ' . $user_id);
-        
-        $children = $this->get_children_for_user($user_id);
-        error_log('WC Child Subscription Manager: User ID ' . $user_id . ' has ' . count($children) . ' children');
+public function add_child_dropdown($fields) {
+    error_log('WC Child Subscription Manager: add_child_dropdown method called');
+    
+    $user_id = get_current_user_id();
+    error_log('WC Child Subscription Manager: Current user ID: ' . $user_id);
+    
+    $children = $this->get_children_for_user($user_id);
+    error_log('WC Child Subscription Manager: User ID ' . $user_id . ' has ' . count($children) . ' children');
 
-        // Only show dropdown if user has children AND there are subscription products in cart
-        if (!empty($children) && $this->has_subscription_products()) {
-            // Add the child dropdown to the billing section instead of order to make it more prominent
-            $fields['billing']['child_id'] = array(
-                'type'        => 'select',
-                'meta_key'    => 'child_id',
-                'label'       => __('Select Child', 'wc-child-subscription-manager'),
-                'class'       => array('form-row-wide wc-child-subscription-dropdown'),
-                'required'    => true,
-                'options'     => array('' => __('Select a child', 'wc-child-subscription-manager')) + $this->get_child_options($children),
-            );
-            
-            // Debug logging
-            error_log('WC Child Subscription Manager: Added child dropdown to billing section');
-        } else {
-            // Debug logging
-            if (empty($children)) {
-                error_log('WC Child Subscription Manager: No children found for user ' . $user_id);
-            }
-            if (!$this->has_subscription_products()) {
-                error_log('WC Child Subscription Manager: No subscription products found in cart for user ' . $user_id);
-            }
+    // Only show dropdown if user has children AND there are subscription products in cart
+    $has_subscription_products = $this->has_subscription_products();
+    error_log('WC Child Subscription Manager: Has subscription products in cart: ' . ($has_subscription_products ? 'Yes' : 'No'));
+    
+    if (!empty($children) && $has_subscription_products) {
+        // Add the child dropdown to the billing section instead of order to make it more prominent
+        $fields['billing']['child_id'] = array(
+            'type'        => 'select',
+            'meta_key'    => 'child_id',
+            'label'       => __('Select Child', 'wc-child-subscription-manager'),
+            'class'       => array('form-row-wide wc-child-subscription-dropdown'),
+            'required'    => true,
+            'options'     => array('' => __('Select a child', 'wc-child-subscription-manager')) + $this->get_child_options($children),
+        );
+        
+        // Debug logging
+        error_log('WC Child Subscription Manager: Added child dropdown to billing section');
+        error_log('WC Child Subscription Manager: Dropdown class: ' . implode(' ', array('form-row-wide wc-child-subscription-dropdown')));
+    } else {
+        // Debug logging
+        if (empty($children)) {
+            error_log('WC Child Subscription Manager: No children found for user ' . $user_id);
         }
+        if (!$has_subscription_products) {
+            error_log('WC Child Subscription Manager: No subscription products found in cart for user ' . $user_id);
+        }
+    }
 
         return $fields;
     }
