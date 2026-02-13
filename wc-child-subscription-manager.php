@@ -28,9 +28,11 @@ define('WC_CHILD_SUBSCRIPTION_MANAGER_PLUGIN_URL', plugin_dir_url(__FILE__));
 // Include required files
 require_once WC_CHILD_SUBSCRIPTION_MANAGER_PLUGIN_DIR . 'includes/class-cpt.php';
 require_once WC_CHILD_SUBSCRIPTION_MANAGER_PLUGIN_DIR . 'includes/class-frontend.php';
-require_once WC_CHILD_SUBSCRIPTION_MANAGER_PLUGIN_DIR . 'includes/class-checkout.php';
-require_once WC_CHILD_SUBSCRIPTION_MANAGER_PLUGIN_DIR . 'includes/class-subscription.php';
 require_once WC_CHILD_SUBSCRIPTION_MANAGER_PLUGIN_DIR . 'includes/class-admin.php';
+
+// Remove subscription and checkout related files
+// require_once WC_CHILD_SUBSCRIPTION_MANAGER_PLUGIN_DIR . 'includes/class-checkout.php';
+// require_once WC_CHILD_SUBSCRIPTION_MANAGER_PLUGIN_DIR . 'includes/class-subscription.php';
 
 /**
  * The main plugin class.
@@ -77,17 +79,8 @@ class WC_Child_Subscription_Manager {
         // Initialize Frontend
         WC_Child_Subscription_Manager_Frontend::get_instance();
 
-        // Initialize Checkout
-        WC_Child_Subscription_Manager_Checkout::get_instance();
-
-        // Initialize Subscription
-        WC_Child_Subscription_Manager_Subscription::get_instance();
-
         // Initialize Admin
         WC_Child_Subscription_Manager_Admin::get_instance();
-        
-        // Create default pages
-        add_action('admin_init', array($this, 'create_default_pages'));
     }
     
     /**
