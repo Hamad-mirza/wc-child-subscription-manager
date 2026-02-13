@@ -66,6 +66,28 @@ class WC_Child_Subscription_Manager_Frontend {
         // Also enqueue on checkout page
         if (function_exists('is_checkout') && is_checkout()) {
             wp_enqueue_script('wc-child-subscription-checkout', WC_CHILD_SUBSCRIPTION_MANAGER_PLUGIN_URL . 'assets/js/checkout.js', array('jquery'), WC_CHILD_SUBSCRIPTION_MANAGER_VERSION, true);
+            
+            // Get children data for checkout page
+            $user_id = get_current_user_id();
+            $children = $this->get_children_for_user($user_id);
+            
+            // Prepare children data for JavaScript
+            $children_data = array();
+            foreach ($children as $child) {
+                $children_data[] = array(
+                    'id' => $child->ID,
+                    'name' => $child->post_title,
+                    'dob' => get_post_meta($child->ID, '_dob', true),
+                    'gender' => get_post_meta($child->ID, '_gender', true),
+                    'age' => get_post_meta($child->ID, '_age', true),
+                    'club' => get_post_meta($child->ID, '_club', true)
+                );
+            }
+            
+            // Localize script with children data
+            wp_localize_script('wc-child-subscription-checkout', 'wcChildSubscriptionCheckout', array(
+                'children' => $children_data
+            ));
         }
     }
 
