@@ -3,7 +3,7 @@ jQuery(document).ready(function($) {
     console.log('WC Child Subscription Manager checkout scripts loaded');
     
     // Handle dropdown change event
-    $(document).on('change', '.wc-child-subscription-dropdown', function() {
+    $(document).on('change', 'select[name="billing_child_id"]', function() {
         var selectedValue = $(this).val();
         console.log('Selected child ID:', selectedValue);
         
@@ -19,7 +19,7 @@ jQuery(document).ready(function($) {
             console.log('Checkout updated, re-initializing dropdown functionality');
             
             // Ensure the dropdown maintains its value after update
-            var $dropdown = $('.wc-child-subscription-dropdown');
+            var $dropdown = $('select[name="billing_child_id"]');
             if ($dropdown.length > 0) {
                 // Trigger a change event to ensure any dependent logic runs
                 $dropdown.trigger('change');
@@ -29,7 +29,7 @@ jQuery(document).ready(function($) {
     
     // Also handle browser back/forward navigation
     $(window).on('pageshow', function(event) {
-        var $dropdown = $('.wc-child-subscription-dropdown');
+        var $dropdown = $('select[name="billing_child_id"]');
         if ($dropdown.length > 0 && event.originalEvent.persisted) {
             // Restore dropdown state if needed
             $dropdown.trigger('change');
@@ -39,12 +39,12 @@ jQuery(document).ready(function($) {
     // Additional handling for WooCommerce checkout updates
     $(document).on('updated_checkout', function() {
         console.log('Checkout updated via WooCommerce event');
-        var $dropdown = $('.wc-child-subscription-dropdown');
+        var $dropdown = $('select[name="billing_child_id"]');
         if ($dropdown.length > 0) {
             $dropdown.trigger('change');
         }
     });
     
     // Add debug logging for dropdown visibility
-    console.log('Initial dropdown elements found:', $('.wc-child-subscription-dropdown').length);
+    console.log('Initial dropdown elements found:', $('select[name="billing_child_id"]').length);
 });
