@@ -96,18 +96,6 @@ class WC_Child_Subscription_Manager_Frontend {
      *
      * @return string Shortcode output.
      */
-    public function shortcode_my_children() {
-        if (!is_user_logged_in()) {
-            return '<p>' . __('Please login to manage your children.', 'wc-child-subscription-manager') . '</p>';
-        }
-
-        $user_id = get_current_user_id();
-        $children = $this->get_children_for_user($user_id);
-
-        ob_start();
-        ?>
-        <div class="wc-child-subscription-manager">
-            <h2><?php esc_html_e('My Children', 'wc-child-subscription-manager'); ?></h2>
             
             <?php if (empty($children)) : ?>
                 <p><?php esc_html_e('You don\'t have any children added yet.', 'wc-child-subscription-manager'); ?></p>
